@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Aromatic Collection - Plataforma de Gestión Bajo Pedido</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              gold: '#d97706',
+              goldLight: '#fef3c7',
+              emerald: '#059669',
+              slate: '#0f172a',
+              darkBg: '#090d16',
+              darkCard: '#131b2e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Chart.js para visualización de finanzas -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 antialiased flex flex-col md:flex-row">
+
+  <!-- VISTA DE LOGIN (Se muestra si no hay sesión activa) -->
+  <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 bg-opacity-95 backdrop-blur-md hidden">
+    <div class="w-full max-w-md bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-8">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-3 text-3xl">
+          💎
+        </div>
+        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Aromatic Collection</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Gestión de Perfumes Bajo Pedido (RD$)</p>
+      </div>
+
+      <form id="form-login" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Correo Electrónico</label>
+          <input type="email" id="login-email" required placeholder="admin@perfumes.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Contraseña</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+        </div>
+
+        <button type="submit" id="btn-login-submit" class="w-full py-3 px-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-medium rounded-xl shadow-lg shadow-amber-600/30 transition-all text-sm flex items-center justify-center gap-2">
+          <span>Iniciar Sesión</span>
+        </button>
+
+        <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 text-center">
+          <p class="font-medium text-slate-700 dark:text-slate-300 mb-1">Cuentas de acceso rápido:</p>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <button type="button" onclick="fillLogin('admin@perfumes.com', 'Admin123456!')" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-left">
+              <span class="block font-semibold text-amber-600 dark:text-amber-400">Admin</span>
+              <span class="text-[10px] text-slate-500">admin@perfumes.com</span>
+            </button>
+            <button type="button" onclick="fillLogin('vendedor1@perfumes.com', 'Vendedor123456!')" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-left">
+              <span class="block font-semibold text-emerald-600 dark:text-emerald-400">Vendedor</span>
+              <span class="text-[10px] text-slate-500">vendedor1@...</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- BARRA LATERAL DESKTOP (PC & Tablets) -->
+  <aside id="sidebar" class="hidden md:flex flex-col w-64 bg-slate-900 dark:bg-[#0b1120] text-slate-300 h-screen sticky top-0 border-r border-slate-800 select-none z-30">
+    <div class="p-5 flex items-center gap-3 border-b border-slate-800/80">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-700 flex items-center justify-center text-white text-xl shadow-md">
+        💎
+      </div>
+      <div>
+        <h1 class="font-bold text-white tracking-wide text-base">Aromatic Collection</h1>
+        <span class="text-[11px] text-amber-400 font-semibold uppercase tracking-wider">Bajo Pedido (RD$)</span>
+      </div>
+    </div>
+
+    <!-- Menú de navegación principal -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto text-sm" id="desktop-nav">
+      <!-- Items inyectados dinámicamente por rol -->
+    </nav>
+
+    <!-- Footer usuario en sidebar -->
+    <div class="p-4 border-t border-slate-800/80 bg-slate-950/40">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center font-bold text-sm cursor-pointer hover:ring-2 hover:ring-amber-500 transition-all" onclick="abrirModalPerfil()" title="Editar Mi Perfil" id="user-avatar">
+          U
+        </div>
+        <div class="flex-1 min-w-0 cursor-pointer" onclick="abrirModalPerfil()" title="Editar Mi Perfil">
+          <p class="text-xs font-semibold text-white truncate hover:text-amber-400 transition-colors" id="user-display-name">Usuario</p>
+          <span class="inline-block text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 uppercase" id="user-role-badge">ADMIN</span>
+        </div>
+        <button onclick="abrirModalPerfil()" title="Editar Mi Perfil y Contraseña" class="text-slate-400 hover:text-amber-400 transition-colors p-1.5 rounded-lg hover:bg-slate-800 text-sm">
+          ⚙️
+        </button>
+        <button onclick="handleLogout()" title="Cerrar Sesión" class="text-slate-400 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-slate-800 text-sm">
+          🚪
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <div class="flex-1 flex flex-col min-h-screen min-w-0">
+
+    <!-- HEADER SUPERIOR -->
+    <header class="h-16 bg-white dark:bg-[#111827] border-b border-slate-200 dark:border-slate-800 px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+      <div class="flex items-center gap-3">
+        <!-- Botón menú móvil -->
+        <button id="btn-toggle-mobile-menu" class="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+          ☰
+        </button>
+        <div class="flex items-center gap-2">
+          <h2 id="view-title" class="text-lg md:text-xl font-bold text-slate-800 dark:text-white">Panel Principal</h2>
+          <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+            RD$ Pesos
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Botón Mi Perfil -->
+        <button onclick="abrirModalPerfil()" title="Mi Perfil y Contraseña" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:scale-105 transition-all text-xs flex items-center gap-1.5 font-medium">
+          <span>👤</span> <span class="hidden sm:inline">Mi Perfil</span>
+        </button>
+
+        <!-- Switch Modo Oscuro / Claro -->
+        <button id="theme-toggle" onclick="toggleTheme()" title="Cambiar Tema Claro/Oscuro" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:scale-105 transition-all text-sm flex items-center gap-1.5">
+          <span id="theme-icon">🌙</span>
+        </button>
+
+        <!-- Botón acción rápida: Nuevo Pedido -->
+        <button onclick="openModal('modal-nuevo-pedido')" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md shadow-amber-600/20 transition-all">
+          <span>+ Nuevo Pedido</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ÁREA DE CONTENIDO PRINCIPAL DINÁMICO -->
+    <main class="flex-1 p-4 md:p-6 pb-24 md:pb-8 overflow-y-auto" id="app-content">
+      <!-- Vistas renderizadas dinámicamente -->
+    </main>
+
+    <!-- NAVEGACIÓN INFERIOR PARA MÓVILES (SMARTPHONES) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-[#111827] border-t border-slate-200 dark:border-slate-800 flex items-center justify-around px-2 z-30 shadow-lg" id="mobile-nav">
+      <!-- Inyectado por rol -->
+    </nav>
+  </div>
+
+  <!-- MENU DESPLEGABLE MÓVIL FULLSCREEN (DRAWER) -->
+  <div id="mobile-drawer" class="fixed inset-0 bg-slate-900 bg-opacity-75 z-40 backdrop-blur-sm hidden md:hidden">
+    <div class="w-72 bg-slate-900 text-slate-200 h-full p-5 flex flex-col justify-between shadow-2xl">
+      <div>
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">💎</span>
+            <span class="font-bold text-white text-base">Aromatic Collection</span>
+          </div>
+          <button onclick="toggleMobileDrawer()" class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xl">✕</button>
+        </div>
+        <div class="py-4 space-y-1" id="mobile-drawer-links"></div>
+      </div>
+      <div class="pt-4 border-t border-slate-800">
+        <button onclick="handleLogout()" class="w-full py-2.5 px-3 rounded-xl bg-red-600/10 text-red-400 hover:bg-red-600/20 font-medium text-xs flex items-center justify-center gap-2">
+          🚪 Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODALES OPERATIVOS ==================== -->
+
+  <!-- MODAL: NUEVO PEDIDO -->
+  <div id="modal-nuevo-pedido" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-lg bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>📦</span> Registrar Nuevo Pedido
+        </h3>
+        <button onclick="closeModal('modal-nuevo-pedido')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+      
+      <form id="form-nuevo-pedido" class="p-6 space-y-4 overflow-y-auto">
+        <!-- Cliente -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Cliente *</label>
+            <button type="button" onclick="openModal('modal-nuevo-cliente')" class="text-xs text-amber-600 dark:text-amber-400 hover:underline">+ Crear Cliente</button>
+          </div>
+          <select id="pedido-cliente-id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500"></select>
+        </div>
+
+        <!-- Vendedor (solo editable por admin) -->
+        <div id="grupo-select-vendedor" class="hidden">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Vendedor Responsable</label>
+          <select id="pedido-vendedor-id" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500"></select>
+        </div>
+
+        <!-- Perfume y Cantidad -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Perfume Solicitado *</label>
+            <input type="text" id="pedido-perfume-nombre" required placeholder="Ej: Bleu de Chanel EDP 100ml" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Cantidad *</label>
+            <input type="number" id="pedido-cantidad" min="1" value="1" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+          </div>
+        </div>
+
+        <!-- Precio y Adelanto -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Precio Venta Unit. (RD$) *</label>
+            <input type="number" id="pedido-precio-unitario" min="1" step="0.01" required placeholder="Ej: 2000" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Adelanto Inicial (RD$)</label>
+            <input type="number" id="pedido-adelanto" min="0" step="0.01" value="0" placeholder="0.00" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+          </div>
+        </div>
+
+        <div id="pedido-metodo-pago-container">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Método de Pago del Adelanto</label>
+          <select id="pedido-metodo-pago" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+            <option value="EFECTIVO">Efectivo</option>
+            <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+            <option value="TARJETA">Tarjeta de Débito / Crédito</option>
+          </select>
+        </div>
+
+        <!-- Resumen de Totales y Balance -->
+        <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-xs space-y-1">
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Total Pedido:</span>
+            <span class="font-bold text-slate-900 dark:text-white" id="calc-total-pedido">RD$ 0.00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Balance Pendiente al Entregar:</span>
+            <span class="font-bold text-amber-600 dark:text-amber-400" id="calc-balance-pedido">RD$ 0.00</span>
+          </div>
+        </div>
+
+        <!-- Notas -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Notas / Indicaciones</label>
+          <textarea id="pedido-notas" rows="2" placeholder="Observaciones de entrega, preferencias del cliente..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"></textarea>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-nuevo-pedido')" class="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md shadow-amber-600/20">Guardar Pedido</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR PAGO / ADELANTO / BALANCE -->
+  <div id="modal-registrar-pago" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-md bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>💵</span> Registrar Pago / Cobro
+        </h3>
+        <button onclick="closeModal('modal-registrar-pago')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+      <form id="form-registrar-pago" class="p-6 space-y-4">
+        <input type="hidden" id="pago-pedido-id">
+        <div class="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 text-xs space-y-1">
+          <p class="font-bold text-slate-800 dark:text-white" id="pago-pedido-codigo">Pedido: PED-XXXX</p>
+          <p class="text-slate-600 dark:text-slate-400" id="pago-pedido-cliente">Cliente: ...</p>
+          <div class="flex justify-between pt-1 border-t border-slate-200 dark:border-slate-700 font-semibold">
+            <span>Balance Pendiente:</span>
+            <span class="text-red-500 font-bold" id="pago-pedido-balance">RD$ 0.00</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Monto a Cobrar (RD$) *</label>
+          <input type="number" id="pago-monto" min="1" step="0.01" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-lg text-emerald-600 dark:text-emerald-400">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Método de Pago</label>
+          <select id="pago-metodo" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+            <option value="EFECTIVO">Efectivo</option>
+            <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+            <option value="TARJETA">Tarjeta</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Concepto / Tipo</label>
+          <select id="pago-tipo" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+            <option value="PAGO_FINAL">Pago Final (Liquidación)</option>
+            <option value="ABONO">Abono Parcial</option>
+            <option value="ADELANTO">Adelanto</option>
+          </select>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-registrar-pago')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs shadow-md">Confirmar Cobro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR COMPRA A PROVEEDOR (ADMIN) -->
+  <div id="modal-registrar-compra" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-md bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>🛍️</span> Registrar Compra de Perfume
+        </h3>
+        <button onclick="closeModal('modal-registrar-compra')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+      <form id="form-registrar-compra" class="p-6 space-y-4">
+        <input type="hidden" id="compra-pedido-id">
+        <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 text-xs space-y-1">
+          <p class="font-bold text-slate-800 dark:text-white" id="compra-pedido-codigo">Pedido: ...</p>
+          <p class="text-slate-600 dark:text-slate-400" id="compra-pedido-perfume">Perfume: ...</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Proveedor *</label>
+          <select id="compra-proveedor-id" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Costo de Compra Real (RD$) *</label>
+          <input type="number" id="compra-costo" min="1" step="0.01" required placeholder="Ej: 1200" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Número de Factura / Referencia</label>
+          <input type="text" id="compra-referencia" placeholder="Ej: FAC-98231" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+
+        <p class="text-[11px] text-slate-500">ℹ Al registrar la compra, se descontará automáticamente el monto de Caja como pago a proveedor y el pedido pasará al estado COMPRADO.</p>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-registrar-compra')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md">Registrar Compra</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR PAQUETE RECIBIDO (FLETE PRORRATEADO) -->
+  <div id="modal-registrar-paquete" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-xl bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>📦</span> Registrar Paquete Recibido (Prorrateo de Flete)
+        </h3>
+        <button onclick="closeModal('modal-registrar-paquete')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <form id="form-registrar-paquete" class="p-6 space-y-4 overflow-y-auto">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Código de Paquete / Guía</label>
+            <input type="text" id="paquete-codigo" placeholder="Ej: PKG-5521" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Proveedor</label>
+            <select id="paquete-proveedor-id" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"></select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Costo Total del Envío (RD$) *</label>
+            <input type="number" id="paquete-costo-total" value="550" min="0" step="0.01" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-bold">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Total Perfumes Recibidos *</label>
+            <input type="number" id="paquete-total-perfumes" value="5" min="1" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-bold">
+          </div>
+        </div>
+
+        <!-- Indicador dinámico del Prorrateo -->
+        <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex items-center justify-between text-xs">
+          <div>
+            <span class="block text-slate-600 dark:text-slate-400">Fórmula: Costo total ÷ Cantidad perfumes</span>
+            <span class="font-bold text-amber-700 dark:text-amber-300 text-sm" id="calc-envio-por-perfume">RD$ 110.00 por perfume</span>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-amber-200/80 dark:bg-amber-800/40 text-amber-800 dark:text-amber-200 text-[11px] font-semibold">Prorrateo Exacto</span>
+        </div>
+
+        <!-- Selección de pedidos contenidos en este paquete -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Asociar a Pedidos en Tránsito / Comprados</label>
+          <div id="lista-pedidos-para-paquete" class="max-h-40 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl p-2 space-y-1.5 bg-slate-50 dark:bg-slate-900/50 text-xs">
+            <!-- Checkboxes dinámicos -->
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Observaciones</label>
+          <input type="text" id="paquete-observaciones" placeholder="Detalles de embalaje, transportista..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-registrar-paquete')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md">Registrar y Distribuir Flete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREAR RUTA DE ENTREGA (GASOLINA PRORRATEADA) -->
+  <div id="modal-crear-ruta" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-xl bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>🚗</span> Crear Ruta de Entrega (Prorrateo de Gasolina)
+        </h3>
+        <button onclick="closeModal('modal-crear-ruta')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <form id="form-crear-ruta" class="p-6 space-y-4 overflow-y-auto">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Responsable de Entrega *</label>
+            <select id="ruta-responsable-id" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Fecha de la Ruta *</label>
+            <input type="date" id="ruta-fecha" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Gasto Total de Gasolina de la Ruta (RD$) *</label>
+          <input type="number" id="ruta-costo-gasolina" value="300" min="0" step="0.01" required placeholder="Ej: 300" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-bold">
+        </div>
+
+        <!-- Indicador de Gasolina por Pedido -->
+        <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex items-center justify-between text-xs">
+          <div>
+            <span class="block text-slate-600 dark:text-slate-400">Fórmula: Gasolina total ÷ Pedidos en ruta</span>
+            <span class="font-bold text-amber-700 dark:text-amber-300 text-sm" id="calc-gasolina-por-pedido">RD$ 100.00 por pedido</span>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-amber-200/80 dark:bg-amber-800/40 text-amber-800 dark:text-amber-200 text-[11px] font-semibold">Costo Operativo</span>
+        </div>
+
+        <!-- Lista de pedidos listos para entregar -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Seleccionar Pedidos a Entregar en esta Ruta *</label>
+          <div id="lista-pedidos-para-ruta" class="max-h-40 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl p-2 space-y-1.5 bg-slate-50 dark:bg-slate-900/50 text-xs">
+            <!-- Inyectados dinámicamente -->
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Notas / Zonas de Entrega</label>
+          <input type="text" id="ruta-observaciones" placeholder="Ej: Zona Metropolitana, Naco, Piantini, Bella Vista..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-crear-ruta')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md">Crear Ruta y Prorratear Gasolina</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO CLIENTE -->
+  <div id="modal-nuevo-cliente" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-md bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>👤</span> Registrar Nuevo Cliente
+        </h3>
+        <button onclick="closeModal('modal-nuevo-cliente')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+      <form id="form-nuevo-cliente" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Nombre Completo *</label>
+          <input type="text" id="cliente-nombre" required placeholder="Ej: Ana Mercedes Santos" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Teléfono / WhatsApp *</label>
+          <input type="tel" id="cliente-telefono" required placeholder="Ej: 809-555-1234" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Dirección de Entrega</label>
+          <input type="text" id="cliente-direccion" placeholder="Sector, calle, número de edificio, apto..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Notas del Cliente</label>
+          <textarea id="cliente-notas" rows="2" placeholder="Preferencias olfativas, horarios convenientes..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"></textarea>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-nuevo-cliente')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md">Guardar Cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO VENDEDOR (ADMIN) -->
+  <div id="modal-nuevo-vendedor" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-md bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>💼</span> Registrar Nuevo Vendedor
+        </h3>
+        <button onclick="closeModal('modal-nuevo-vendedor')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+      <form id="form-nuevo-vendedor" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Nombre Completo *</label>
+          <input type="text" id="vendedor-nombre" required placeholder="Ej: Roberto Almonte" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Correo Electrónico (Acceso) *</label>
+          <input type="email" id="vendedor-email" required placeholder="roberto@perfumes.com" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Contraseña de Acceso *</label>
+          <input type="password" id="vendedor-password" required placeholder="Al menos 6 caracteres" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Teléfono</label>
+          <input type="tel" id="vendedor-telefono" placeholder="Ej: 829-555-7788" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+        <p class="text-[11px] text-slate-500">ℹ El vendedor solo podrá ver sus propios pedidos y clientes. No tendrá acceso a costos de compra, márgenes ni finanzas globales.</p>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-nuevo-vendedor')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md">Crear Vendedor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO MOVIMIENTO MANUAL DE CAJA (ADMIN) -->
+  <div id="modal-nuevo-movimiento-caja" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-md bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>💰</span> Registrar Movimiento de Caja
+        </h3>
+        <button onclick="closeModal('modal-nuevo-movimiento-caja')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+      <form id="form-movimiento-caja" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Tipo de Movimiento *</label>
+          <select id="caja-tipo" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+            <option value="SALIDA">Salida de Efectivo (Gasto / Egreso)</option>
+            <option value="ENTRADA">Entrada de Efectivo (Ingreso / Aporte)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Categoría</label>
+          <select id="caja-categoria" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+            <option value="GASTO_OPERATIVO">Gasto Operativo (Bolsas, Cinta, Empaque)</option>
+            <option value="AJUSTE_CAJA">Ajuste de Caja / Aporte de Capital</option>
+            <option value="OTRO">Otro Concepto</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Monto (RD$) *</label>
+          <input type="number" id="caja-monto" min="1" step="0.01" required placeholder="0.00" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-bold">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Descripción / Concepto *</label>
+          <input type="text" id="caja-descripcion" required placeholder="Ej: Compra de bolsas de regalo y lazos" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-nuevo-movimiento-caja')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md">Registrar en Caja</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CAMBIO DE ESTADO DE PEDIDO -->
+  <div id="modal-cambiar-estado" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-md bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>🔄</span> Cambiar Estado de Pedido
+        </h3>
+        <button onclick="closeModal('modal-cambiar-estado')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+      <form id="form-cambiar-estado" class="p-6 space-y-4">
+        <input type="hidden" id="estado-pedido-id">
+        <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 text-xs space-y-1">
+          <p class="font-bold text-slate-800 dark:text-white" id="estado-pedido-codigo">Pedido: ...</p>
+          <p class="text-slate-600 dark:text-slate-400" id="estado-pedido-actual">Estado Actual: ...</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Nuevo Estado *</label>
+          <select id="estado-nuevo" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-medium">
+            <option value="REGISTRADO">1. Registrado</option>
+            <option value="PENDIENTE_COMPRA">2. Pendiente de Compra</option>
+            <option value="COMPRADO">3. Comprado</option>
+            <option value="EN_TRANSITO">4. En Tránsito</option>
+            <option value="RECIBIDO">5. Recibido</option>
+            <option value="LISTO_ENTREGA">6. Listo para Entregar</option>
+            <option value="ENTREGADO">7. Entregado al Cliente</option>
+            <option value="CANCELADO">8. Cancelado</option>
+          </select>
+        </div>
+
+        <div id="motivo-cancelacion-container" class="hidden">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-red-600 dark:text-red-400 mb-1">Motivo de Cancelación *</label>
+          <textarea id="estado-motivo" rows="2" placeholder="Especificar por qué se canceló el pedido..." class="w-full px-3.5 py-2 rounded-xl border border-red-300 dark:border-red-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"></textarea>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-cambiar-estado')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md">Actualizar Estado</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR MI PERFIL Y CONTRASEÑA -->
+  <div id="modal-editar-perfil" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-md bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>👤</span> Mi Perfil y Contraseña
+        </h3>
+        <button onclick="closeModal('modal-editar-perfil')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="p-6 space-y-5 overflow-y-auto">
+        <!-- Formulario Datos Generales -->
+        <form id="form-editar-perfil" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Nombre Completo *</label>
+            <input type="text" id="perfil-nombre" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Correo Electrónico (Usuario de Acceso) *</label>
+            <input type="email" id="perfil-email" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Teléfono</label>
+            <input type="tel" id="perfil-telefono" placeholder="809-555-0000" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+          </div>
+
+          <div class="pt-1 flex justify-end">
+            <button type="submit" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md">
+              Actualizar Mis Datos
+            </button>
+          </div>
+        </form>
+
+        <hr class="border-slate-200 dark:border-slate-800">
+
+        <!-- Formulario Cambiar Contraseña -->
+        <form id="form-cambiar-password" class="space-y-3">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+            <span>🔒</span> Cambiar Contraseña
+          </h4>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Contraseña Actual *</label>
+            <input type="password" id="perfil-password-actual" required placeholder="Tu contraseña actual" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Nueva Contraseña * (Mín. 6 caracteres)</label>
+            <input type="password" id="perfil-password-nueva" required minlength="6" placeholder="Nueva contraseña" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500">
+          </div>
+
+          <div class="pt-1 flex justify-end">
+            <button type="submit" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-medium text-xs shadow-md">
+              Cambiar Contraseña
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR VENDEDOR Y RESTABLECER CONTRASEÑA (ADMIN) -->
+  <div id="modal-editar-vendedor" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="w-full max-w-md bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>✏️</span> Editar Vendedor y Claves
+        </h3>
+        <button onclick="closeModal('modal-editar-vendedor')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <form id="form-editar-vendedor" class="p-6 space-y-4">
+        <input type="hidden" id="editar-vendedor-id">
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Nombre Completo *</label>
+          <input type="text" id="editar-vendedor-nombre" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Correo Electrónico (Acceso) *</label>
+          <input type="email" id="editar-vendedor-email" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">Teléfono</label>
+          <input type="tel" id="editar-vendedor-telefono" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm">
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">Restablecer Contraseña (Opcional)</label>
+          <input type="password" id="editar-vendedor-password" placeholder="Dejar en blanco para conservar la actual" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs">
+          <p class="text-[10px] text-slate-500">Si escribes una nueva contraseña, la anterior quedará reemplazada de inmediato.</p>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-editar-vendedor')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-md">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Scripts de la Aplicación -->
+  <script src="/js/app.js"></script>
+  <script src="/js/views.js"></script>
+</body>
+</html>

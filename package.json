@@ -1,0 +1,29 @@
+{
+  "name": "perfumes-gestion",
+  "version": "1.0.0",
+  "description": "Plataforma Integral de Gestión para Negocio de Perfumes Bajo Pedido",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "seed": "node src/db/seed.js",
+    "test": "node test/calculations.test.js && node test/api.test.js"
+  },
+  "keywords": [
+    "perfumes",
+    "gestion",
+    "bajo-pedido",
+    "comisiones",
+    "caja",
+    "republica-dominicana"
+  ],
+  "author": "Antigravity Engineering",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
+  }
+}
